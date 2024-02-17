@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Avatar from "boring-avatars";
 import {
   FaRegCircleXmark,
@@ -13,16 +13,41 @@ import Modal from "./modal";
 
 import { User } from "./types/user";
 
-export type GalleryProps = {
-  users: User[];
-};
-const Gallery = ({ users }: GalleryProps) => {
-  const [usersList, setUsersList] = useState(users);
+// export type GalleryProps = {
+//   users: User[];
+// };
+const Gallery = () => {
+
+  const fetchUsers = () => {
+    const apiUrl = "https://jsonplaceholder.typicode.com/users";
+    fetch(apiUrl)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log("API Response: ", data);
+        setUsersList(data)
+      })
+      .catch(error => {
+        console.error("Error: ", error)
+      });
+  }
+
+
+    useEffect(() => {
+      fetchUsers();
+    }, [])
+
+  const [usersList, setUsersList] = useState([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleModalOpen = (id: number) => {
-    const user = usersList.find((item) => item.id === id) || null;
+    const users = usersList as User[]
+    const user = users.find((item) => item.id === id) || null;
 
     if(user) {
       setSelectedUser(user);
@@ -39,7 +64,7 @@ const Gallery = ({ users }: GalleryProps) => {
     <div className="user-gallery">
       <h1 className="heading">Users</h1>
       <div className="items">
-        {usersList.map((user, index) => (
+        {usersList.map((user: User, index) => (
           <div
             className="item user-card"
             key={index}
